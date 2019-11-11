@@ -1,6 +1,8 @@
 import pickle
 import spacy
+import getch
 import nltk
+import re
 import numpy as np
 from spacy import displacy
 import en_core_web_sm
@@ -61,26 +63,38 @@ class SequencePredict:
     def prediction_union(self, sent):
         tags = self.input_tag_to_prediction(sent)
         superset_tags = [tag[:2] for tag in tags]
-        print(tags, superset_tags)
         combined_predictions = self.rnn_predict(sent)
         combined_predictions.extend(x for x in self.input_word_to_prediction(sent) if x not in combined_predictions)
         prediction_tags = [nlp(word)[0].tag_[:2] for word in combined_predictions]
-        print(prediction_tags)
         filtered_predictions = [word for word in combined_predictions if nlp(word)[0].tag_[:2] in superset_tags]
 
         return combined_predictions, filtered_predictions
 
     def run(self, sent):
-        out = sent
+        print(sent)
+        trigram_sent = " ".join(nltk.word_tokenize(sent)[-3:])
+        combined_predictions, filtered_predictions  = self.prediction_union(trigram_sent)
+        print(filtered_predictions)
+        cur_word = ""
         while True:
-            print(out)
-            combined_predictions, filtered_predictions  = self.prediction_union(sent)
-            #print(combined_predictions)
-            print(filtered_predictions)
-            inp = input()
-            if inp=="exit":
-                return out
-            out+= " " +inp
-            l = len(inp.split())
-            sent = " ".join(nltk.word_tokenize(sent)[l:]+[inp])
-        print(out)
+            char = getch.getch()
+            print(char)
+            cur_word+=char
+
+            if char.isdigit():
+                if int(char)<=3:
+                    cur_word = filtered_predictions[int(char)-1]
+                    sent = " ".join(nltk.word_tokenize(sent)+[cur_word])
+                    self.run(sent)
+
+            if len(list(filter(lambda x: cur_word in x, filtered_predictions)))==0 and len(cur_word)==2 and len(list(filter(lambda x: cur_word in x, combined_predictions)))!=0:
+                choices = [possible_choice for possible_choice in combined_predictions if cur_word in possible_choice]
+                print(choices, "press tab to autocomplete")
+
+            if char=="\t":
+                sent = " ".join(nltk.word_tokenize(sent)+[choices[0]])
+                self.run(sent)
+
+            elif char==" ":
+                sent = " ".join(nltk.word_tokenize(sent)+[cur_word])
+                self.run(sent)

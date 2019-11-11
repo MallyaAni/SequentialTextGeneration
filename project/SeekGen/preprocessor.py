@@ -83,7 +83,9 @@ class Preprocess:
         return np.array(X),np.array(Y)
 
     def processTags(self):
-        doc = nlp(' '.join(self.words))
+        file = nltk.corpus.webtext.fileids()[-1] #ID is the last one
+        words = nltk.corpus.webtext.words(file)
+        doc = nlp(' '.join(words))
         self.tag_encoder = LabelEncoder()
 
         xtemp = [token.tag_ for token in doc]

@@ -30,17 +30,16 @@ class SequenceTrain:
         processor = self.run_preprocess()
 
         X_encoded, y_encoded = processor.processTags()
-        tag_model = SVC(gamma='auto',probability=True, class_weight='balanced',verbose=2, max_iter=10)
+        tag_model = SVC(gamma='auto',probability=True, class_weight='balanced',verbose=2)
         tag_model.fit(X_encoded, y_encoded)
 
         X, y = processor.processWords()
-        sequence_model =  MLPClassifier(n_iter_no_change =2, max_iter = 10, verbose=1, activation='tanh', learning_rate='constant', alpha=1e-4, random_state=1, warm_start='full') #picked 60 as limit because it overfits after
-        sequence_model.fit(X,y)
+        sequence_model =  MLPClassifier(n_iter_no_change =2, verbose=1, activation='tanh', learning_rate='constant', alpha=1e-4, random_state=1, warm_start='full')
 
         X, y = processor.processWords(flatten=False)
         rnn_model = self.bidirectional_lstm_model(X.shape[1],X.shape[2],processor.vocab)
         rnn_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=[categorical_accuracy])
-        history_rnn = rnn_model.fit(X, y, batch_size=32, shuffle=True, epochs=2, validation_split=0.1)
+        history_rnn = rnn_model.fit(X, y, batch_size=32, shuffle=True, epochs=20, validation_split=0.1)
         print("Training complete!")
         if save==True:
             self.save_models(rnn_model, sequence_model, tag_model)
