@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+{% extends "index.html" %}
+{% block title %}<title>Predictions</title>{% endblock title %}
+{% block head %}
+    {{ super() }}
+{% endblock head %}
+
+<body>
+{% block predictions %}
+    <div class="container">
+        <div>
+            <form action="{{ url_for('predict') }}" method="POST">
+                
+            {% if options %}
+                <select id="response" type="text" name="response">
+                {% for option in options %}
+                    <option value={{option}}>{{option}}</option>
+                {% endfor %}
+                </select>
+
+                <input type="checkbox" id="ignore" name="ignore"><span id="span">Ignore suggestion</span>
+                <input type="text" id="override" name="override"><span id="span">Custom input</span>
+
+            {% elif not options %}
+                <input type="text" id="response" name="response" placeholder="Enter 3 words to start">
+            {% endif %}
+
+            <input type="submit" name="Submit" value="Submit">
+            
+            {% if sentence %}
+                <div id="text-display">
+                    <p id="sentence">{{sentence}}</p>
+                </div>
+            {% endif %}
+
+            </form>
+        </div>
+    </div>  
+
+{% endblock predictions %}
+</body>
